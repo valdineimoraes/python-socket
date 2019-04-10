@@ -1,43 +1,39 @@
 import socket
 # from socket import *
 
-# Criar o socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Escutar a porta 9000
-server = sock.bind(('localhost', 9000))
-
-# Definir o limite de 1 conexao paralela
-sock.listen(1)
-
-# Aceitar uma conexao e finaliza-la
-mensagem = "Ola Cliente"
-tamanho_da_mensagem = len(mensagem)
-print("Tamanho da mensagem = {}".format(len(mensagem)))
-
-while True:
-    # Aguardar uma conexao
-    print("Aguardando conexao")
-    connection, address_client = sock.accept()    
+def chat_server():
     
-    # Envio tamanho da mensagem
-    connection.sendall(str(tamanho_da_mensagem).zfill(4).encode())
-    
-    # Enviar mensagem
-    connection.sendall(mensagem.encode())
+    # Criar o socket
+    server_socket = socket.socket()
 
-    # Aguardar tamanho da mensagem
-    expected_data_size = ''
-    while(expected_data_size == ''):
-        expected_data_size += connection.recv(4).decode()
-    expected_data_size = int(expected_data_size)
+    # Escutar a porta 9000 e localhost
+    server_socket.bind(('localhost', 9000))
 
-    received_data = ''
-    while len(received_data) < expected_data_size:
-        # Ler o dado recebido
-        received_data += connection.recv(4).decode()
-        print("Tamanho do dado {}".format(len(received_data)))
-    print(received_data)
+    # Quantidade de clientes que o servidor escuta
+    server_socket.listen(1)
 
-    # Finalizar a conexao
-    connection.close()
+    # Aceitar a nova conexao
+    conn, address = server_socket.accept()
+
+    print("Conectado a: "+str(address))
+
+    while True:
+        # recebe fluxo de dados e nao aceita pacote maior que 1024 bytes
+        data = conn.recv(1024).decode()
+        
+        # Se nao tiver nenhum dados ele para
+        if not data:
+            break
+
+        # Se tiver dados do usuario ele imprime    
+        print(" Mensagem do Usuario: "+str(data))
+
+        # Enviar Dados ao cliente
+        message = input(' -> ')
+        conn.send(message.encode())
+
+    # Fecha a conexao
+    conn.close()
+
+if __name__ == '__main__':
+    chat_server()

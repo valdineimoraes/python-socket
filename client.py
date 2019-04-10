@@ -1,34 +1,32 @@
 import socket
-import time
 
-# Criar o socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+def chat_client():
 
-# Conectar ao servidor com ip e porta
-sock.connect(('localhost', 9000))
+    # Criar o socket
+    client_sock = socket.socket()
 
-# Leia o tamanho da mensagem
-expected_data_size = int(sock.recv(4).decode())
-print("Tamanho de dado esperado = {}".format(expected_data_size))
+    # Conectar ao servidor com ip e porta
+    client_sock.connect(('localhost', 9000))
 
-received_data = ''
-while len(received_data) < expected_data_size:
-    # Ler o dado recebido
-    received_data += sock.recv(4).decode()
-    print("Tamanho do dado {}".format(len(received_data)))
-print(received_data)
+    message = input(" -> ")
 
+    # Envia e recebe mensagem enquanto a mensagem for diferente de see ya 
+    while message.lower().strip() != 'see ya':
 
-# Tamanho da mensagem
-mensagem = "Ola servidor"
-send_data_size = len(mensagem)
-sock.sendall(str(send_data_size).zfill(4).encode())
+        # Envia a mensagem ao servidor
+        client_sock.send(message.encode())
 
-# Enviar a mensagem
-sock.sendall(mensagem.encode())
+        # Recebe mensagem do servidor e nao aceita dados maior que 1024 bytes
+        data = client_sock.recv(1024).decode()
 
-#
-time.sleep(3)
+        # Imprime mensagem do Servidor
+        print('Mensagem do Servidor: '+data)
 
-# Finalizar a conexao
-sock.close()
+        # Prepara para enviar nova mensagem
+        message = input(" -> ")
+
+    # Fecha conexao
+    client_sock.close()
+
+if __name__ == '__main__':
+    chat_client()
